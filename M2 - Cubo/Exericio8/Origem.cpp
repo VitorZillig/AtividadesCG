@@ -44,7 +44,9 @@ const GLchar* vertexShaderSource = "#version 450\n"
 "void main()\n"
 "{\n"
 //...pode ter mais linhas de código aqui!
-"gl_Position = model * vec4(position, 1.0);\n"
+"vec3 pos = position;\n"
+"pos.y -= float(gl_InstanceID) * 1.2;\n"	
+"gl_Position = model * vec4(pos, 1.0);\n"
 "finalColor = vec4(color, 1.0);\n"
 "}\0";
 
@@ -59,7 +61,7 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 
 bool rotateX=false, rotateY=false, rotateZ=false;
 
-float posX = 0.0f, posY = 0.0f, posZ = 0.0f, scale = 1.0f;
+float posX = 0.0f, posY = 0.5f, posZ = 0.0f, scale = 0.8f;
 
 // Função MAIN
 int main()
@@ -76,9 +78,9 @@ int main()
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//Essencial para computadores da Apple
-//#ifdef __APPLE__
+	//#ifdef __APPLE__
 //	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-//#endif
+	//#endif
 
 	// Criação da janela GLFW
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Ola 3D -- Vitor Zillig", nullptr, nullptr);
@@ -166,7 +168,7 @@ int main()
 		// Poligono Preenchido - GL_TRIANGLES
 		
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 2);
 
 		// Chamada de desenho - drawcall
 		// CONTORNO - GL_LINE_LOOP
@@ -217,16 +219,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	if (key == GLFW_KEY_S && action == GLFW_PRESS) {
 		posY -= 0.1f;
-
 	}
 	if (key == GLFW_KEY_A && action == GLFW_PRESS) {
 		posX -= 0.1f;
-
-
 	}
 	if (key == GLFW_KEY_D && action == GLFW_PRESS) {
 		posX += 0.1f;
-
 	}
 	if (key == GLFW_KEY_J && action == GLFW_PRESS) {
 		posZ += 0.1f;
@@ -240,13 +238,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) {
 		scale += 0.2;
 	}
-
-
-
-
-
-
-
 }
 
 //Esta função está basntante hardcoded - objetivo é compilar e "buildar" um programa de
@@ -365,7 +356,7 @@ int setupGeometry()
 			0.5, -0.5, -0.5, 0.5, 0.2, 0.4,
 			0.5, -0.5,  0.5, 0.5, 0.2, 0.4,
 
-			0.5, 0.5, -0.5,0.5, 0.2, 0.4,
+			0.5, 0.5, -0.5, 0.5, 0.2, 0.4,
 			0.5, 0.5,  0.5, 0.5, 0.2, 0.4,
 			0.5, -0.5, -0.5, 0.5, 0.2, 0.4,
 	};
