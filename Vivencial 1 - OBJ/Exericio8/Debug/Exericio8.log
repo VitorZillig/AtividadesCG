@@ -1,0 +1,4 @@
+﻿  Origem.cpp
+D:\Documentos\Computação Gráfica\AtividadesCG\Vivencial 1 - OBJ\Exericio8\Origem.cpp(241,15): warning C4305: '-=': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\Vivencial 1 - OBJ\Exericio8\Origem.cpp(244,15): warning C4305: '+=': truncamento de 'double' para 'float'
+  Exericio8.vcxproj -> D:\Documentos\Computação Gráfica\AtividadesCG\Vivencial 1 - OBJ\Debug\Hello3D.exe
