@@ -1,5 +1,5 @@
 ﻿  Origem.cpp
-D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Exericio8\Origem.cpp(236,15): warning C4305: '-=': truncamento de 'double' para 'float'
-D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Exericio8\Origem.cpp(239,15): warning C4305: '+=': truncamento de 'double' para 'float'
-D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Exericio8\Origem.cpp(362,2): warning C4305: 'inicializando': truncamento de 'double' para 'GLfloat'
+D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Exericio8\Origem.cpp(245,15): warning C4305: '-=': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Exericio8\Origem.cpp(248,15): warning C4305: '+=': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Exericio8\Origem.cpp(374,2): warning C4305: 'inicializando': truncamento de 'double' para 'GLfloat'
   Exericio8.vcxproj -> D:\Documentos\Computação Gráfica\AtividadesCG\M2 - Cubo\Debug\Hello3D.exe

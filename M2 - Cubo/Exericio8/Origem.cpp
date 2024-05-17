@@ -7,6 +7,8 @@
  *
  */
 
+//Nome: Vitor Henrique Grego Zillig
+
 #include <iostream>
 #include <string>
 #include <assert.h>
@@ -43,7 +45,7 @@ const GLchar* vertexShaderSource = "#version 450\n"
 "out vec4 finalColor;\n"
 "void main()\n"
 "{\n"
-//...pode ter mais linhas de código aqui!
+//adicionado ao shader o posicionamento do segundo cubo por meio do "gl_InstanceID"
 "vec3 pos = position;\n"
 "pos.y -= float(gl_InstanceID) * 1.2;\n"	
 "gl_Position = model * vec4(pos, 1.0);\n"
@@ -60,6 +62,8 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 "}\n\0";
 
 bool rotateX=false, rotateY=false, rotateZ=false;
+
+// Adicionadas as variáveis para possibilitar o deslocamento nos três eixos, bem como a alteração da escala
 
 float posX = 0.0f, posY = 0.5f, posZ = 0.0f, scale = 0.8f;
 
@@ -119,7 +123,7 @@ int main()
 
 	glm::mat4 model = glm::mat4(1); //matriz identidade;
 	GLint modelLoc = glGetUniformLocation(shaderID, "model");
-	//
+	
 	model = glm::rotate(model, /*(GLfloat)glfwGetTime()*/glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glUniformMatrix4fv(modelLoc, 1, FALSE, glm::value_ptr(model));
 
@@ -140,7 +144,8 @@ int main()
 		glPointSize(20);
 
 		float angle = (GLfloat)glfwGetTime();
-			
+
+		//Adicionadas matrizes de translação e escala
 		model = glm::mat4(1); 
 		model = glm::translate(model, glm::vec3(posX, posY, posZ));
 		model = glm::scale(model, glm::vec3(scale));
@@ -168,6 +173,8 @@ int main()
 		// Poligono Preenchido - GL_TRIANGLES
 		
 		glBindVertexArray(VAO);
+
+		//Adicionada mais uma instância do cubo
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 2);
 
 		// Chamada de desenho - drawcall
@@ -214,6 +221,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotateY = false;
 		rotateZ = true;
 	}
+
+	//Adicionados os comandos para a movimentação nos três eixos, além da alteração da escala por meio das teclas de "-" e "+"
 	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
 		posY += 0.1f;
 	}
@@ -299,6 +308,9 @@ int setupGeometry()
 	// sequencial, já visando mandar para o VBO (Vertex Buffer Objects)
 	// Cada atributo do vértice (coordenada, cores, coordenadas de textura, normal, etc)
 	// Pode ser arazenado em um VBO único ou em VBOs separados
+
+	//Alterada a geometria para um cubo
+
 	GLfloat vertices[] = {
 
 		//Base da pirâmide: 2 triângulos
