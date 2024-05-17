@@ -7,6 +7,8 @@
  *
  */
 
+//Nome: Vitor Henrique Grego Zillig
+
 #include <iostream>
 #include <string>
 #include <assert.h>
@@ -46,7 +48,7 @@ const GLchar* vertexShaderSource = "#version 450\n"
 "out vec4 finalColor;\n"
 "void main()\n"
 "{\n"
-//...pode ter mais linhas de código aqui!
+//adicionado ao shader o posicionamento do segundo cubo por meio do "gl_InstanceID"
 "vec3 pos = position;\n"
 "pos.y -= float(gl_InstanceID) * 1.2;\n"	
 "gl_Position = model * vec4(pos, 1.0);\n"
@@ -64,7 +66,9 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 
 bool rotateX=false, rotateY=false, rotateZ=false;
 
-float posX = 0.0f, posY = 0.5f, posZ = 0.0f, scale = 0.8f;
+// Adicionadas as variáveis para possibilitar o deslocamento nos três eixos, bem como a alteração da escala
+
+float posX = 0.0f, posY = 0.0f, posZ = 0.0f, scale = 1.0f;
 
 // Função MAIN
 int main()
@@ -116,7 +120,7 @@ int main()
 
 	int nVerts = 36;
 
-	// Gerando um buffer simples, com a geometria de um triângulo
+	// Leitura do arquivo "cube.obj" para obter a geometria
 	GLuint VAO = loadSimpleOBJ("cube.obj", nVerts, glm::vec3(0,1,0));
 
 
@@ -124,7 +128,7 @@ int main()
 
 	glm::mat4 model = glm::mat4(1); //matriz identidade;
 	GLint modelLoc = glGetUniformLocation(shaderID, "model");
-	//
+	
 	model = glm::rotate(model, /*(GLfloat)glfwGetTime()*/glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glUniformMatrix4fv(modelLoc, 1, FALSE, glm::value_ptr(model));
 
@@ -145,7 +149,8 @@ int main()
 		glPointSize(20);
 
 		float angle = (GLfloat)glfwGetTime();
-			
+		
+		//Adicionadas matrizes de translação e escala
 		model = glm::mat4(1); 
 		model = glm::translate(model, glm::vec3(posX, posY, posZ));
 		model = glm::scale(model, glm::vec3(scale));
@@ -219,6 +224,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotateY = false;
 		rotateZ = true;
 	}
+
+	//Adicionados os comandos para a movimentação nos três eixos, além da alteração da escala por meio das teclas de "-" e "+"
 	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
 		posY += 0.1f;
 	}
@@ -293,6 +300,8 @@ int setupShader()
 	return shaderProgram;
 }
 
+// Adição da função "loadSimpleOBJ"
+
 int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 {
 	vector <glm::vec3> vertices;
@@ -300,6 +309,8 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 	vector <glm::vec2> texCoords;
 	vector <glm::vec3> normals;
 	vector <GLfloat> vbuffer;
+
+	// Leitura do arquivo
 
 	ifstream inputFile;
 	inputFile.open(filepath.c_str());
@@ -320,6 +331,7 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 			istringstream ssline(line);
 			ssline >> word;
 			//cout << word << " ";
+			//Mapeando as posições
 			if (word == "v")
 			{
 				glm::vec3 v;
@@ -328,6 +340,7 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 
 				vertices.push_back(v);
 			}
+			//Mapeando as coordenadas da textura
 			if (word == "vt")
 			{
 				glm::vec2 vt;
@@ -335,6 +348,7 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 
 				texCoords.push_back(vt);
 			}
+			//Mapeando as coordenadas dos vetores normais
 			if (word == "vn")
 			{
 				glm::vec3 vn;
