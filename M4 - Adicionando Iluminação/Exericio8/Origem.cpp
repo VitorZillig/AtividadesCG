@@ -1,4 +1,4 @@
-//COPIA PHONG
+// Nome: Vitor Henrique Grego Zillig
 
 /* Hello Triangle - código adaptado de https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
@@ -32,9 +32,6 @@ using namespace std;
 #define STB_IMAGE_IMPLEMENTATION  
 #include "../../M3 - Adicionando Texturas/stb_image.h"
 
-// Protótipo da função de callback do mouse
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
 // Protótipo da função de callback de teclado
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
@@ -42,7 +39,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 int setupShader();
 int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color);
 int loadTexture(string path);
-string getTextureName(string filepath);
+string readMTLFile(string filepath, GLuint shaderID);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
 const GLuint WIDTH = 1000, HEIGHT = 1000;
@@ -89,9 +86,6 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 "uniform vec3 lightPos;\n"
 "uniform vec3 lightColor;\n"
 
-//Posição da Camera
-"uniform vec3 cameraPos;\n"
-
 "void main()\n"
 "{\n"
 //Cálculo da parcela de iluminação ambiente
@@ -104,7 +98,7 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 "vec3 diffuse = kd * diff * lightColor;\n"
 
 //Cálculo da parcela de iluminação especular
-"vec3 V = normalize(cameraPos - fragPos);\n"
+"vec3 V = normalize(fragPos);\n"
 "vec3 R = normalize(reflect(-L, N));\n"
 "float spec = max(dot(R, V), 0.0);\n"
 "spec = pow(spec, q);\n"
@@ -119,15 +113,7 @@ bool rotateX = false, rotateY = false, rotateZ = false;
 // Adicionadas as variáveis para possibilitar o deslocamento nos três eixos, bem como a alteração da escala
 
 float posX = 0.0f, posY = 0.0f, posZ = 0.0f, scale = 1.0f;
-
-glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 3.0);
-glm::vec3 cameraFront = glm::vec3(0.0, 0.0, -1.0);
-glm::vec3 cameraUp = glm::vec3(0.0, 1.0, 0.0);
-
-bool firstMouse = true;
-float lastX, lastY;
-float sensitivity = 0.05;
-float pitch = 0.0, yaw = -90.0;
+float q, ka, ks, kd;
 
 // Função MAIN
 int main()
@@ -154,7 +140,6 @@ int main()
 
 	// Fazendo o registro da função de callback para a janela GLFW
 	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
 
 	// GLAD: carrega todos os ponteiros d funções da OpenGL
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -179,7 +164,7 @@ int main()
 	GLuint shaderID = setupShader();
 
 	// Leitura do arquivo "cube.obj" para obter a textura
-	string textureName = getTextureName("cube.mtl");
+	string textureName = readMTLFile("cube.mtl", shaderID);
 
 	GLuint texID = loadTexture("cube.png");
 
@@ -209,15 +194,14 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 
-
 	//Definindo as propriedades do material da superficie
-	glUniform1f(glGetUniformLocation(shaderID, "ka"), 0.2);
-	glUniform1f(glGetUniformLocation(shaderID, "kd"), 0.5);
-	glUniform1f(glGetUniformLocation(shaderID, "ks"), 0.5);
-	glUniform1f(glGetUniformLocation(shaderID, "q"), 10.0);
+	glUniform1f(glGetUniformLocation(shaderID, "ka"), ka);
+	glUniform1f(glGetUniformLocation(shaderID, "kd"), kd);
+	glUniform1f(glGetUniformLocation(shaderID, "ks"), ks);
+	glUniform1f(glGetUniformLocation(shaderID, "q"), q);
 
 	//Definindo a fonte de luz pontual
-	glUniform3f(glGetUniformLocation(shaderID, "lightPos"), -2.0, 0.0, 5.0);
+	glUniform3f(glGetUniformLocation(shaderID, "lightPos"), -2.0, 5.0, 10.0);
 	glUniform3f(glGetUniformLocation(shaderID, "lightColor"), 1.0, 1.0, 0.0);
 
 	// Loop da aplicação - "game loop"
@@ -232,14 +216,6 @@ int main()
 
 		glLineWidth(10);
 		glPointSize(20);
-
-		//Atualizando a posição e orientação da câmera
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, FALSE, value_ptr(view));
-
-		//Atualizando o shader com a posição da câmera
-		glUniformMatrix3fv(glGetUniformLocation(shaderID, "cameraPos"), 1, FALSE, value_ptr(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z)));
-
 
 		float angle = (GLfloat)glfwGetTime();
 
@@ -346,25 +322,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) {
 		scale += 0.2;
-	}
-
-	float cameraSpeed = 0.05;
-
-	if (key == GLFW_KEY_O)
-	{
-		cameraPos += cameraFront * cameraSpeed;
-	}
-	if (key == GLFW_KEY_J)
-	{
-		cameraPos -= cameraFront * cameraSpeed;
-	}
-	if (key == GLFW_KEY_K)
-	{
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	}
-	if (key == GLFW_KEY_L)
-	{
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
 
 }
@@ -600,8 +557,8 @@ int loadTexture(string path)
 	return texID;
 }
 
-// Função que lê o arquivo passado e retorna o nome da textura
-string getTextureName(string filepath)
+// Função que lê o arquivo passado e retorna o nome da textura, mas também atualiza as variáveis relacionadas à iluminação
+string readMTLFile(string filepath, GLuint shaderID)
 {
 
 	ifstream inputFile;
@@ -636,6 +593,47 @@ string getTextureName(string filepath)
 				ssline >> v.x >> v.y >> v.z;
 				textureName = tokens[0];
 			}
+			if (word == "Ns")
+			{
+				string tokens[1];
+				ssline >> tokens[0];
+				string value = tokens[0];
+
+				float parseFloat = std::stof(value);
+
+				q = parseFloat;
+			}
+			if (word == "Ka")
+			{
+				string tokens[1];
+				ssline >> tokens[0];
+				string value = tokens[0];
+
+				float parseFloat = std::stof(value);
+
+				ka = parseFloat;
+			}
+			if (word == "Ks")
+			{
+				string tokens[1];
+				ssline >> tokens[0];
+				string value = tokens[0];
+
+				float parseFloat = std::stof(value);
+
+				ks = parseFloat;
+			}
+			if (word == "Kd")
+			{
+				string tokens[1];
+				ssline >> tokens[0];
+				string value = tokens[0];
+
+				float parseFloat = std::stof(value);
+
+				kd = parseFloat;
+			}
+
 		}
 	}
 	else
@@ -645,34 +643,4 @@ string getTextureName(string filepath)
 	inputFile.close();
 
 	return textureName;
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-	//cout << xpos << " " << ypos << endl;
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	float offsetx = xpos - lastX;
-	float offsety = lastY - ypos;
-
-	lastX = xpos;
-	lastY = ypos;
-
-	offsetx *= sensitivity;
-	offsety *= sensitivity;
-
-	pitch += offsety;
-	yaw += offsetx;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
-
 }
