@@ -79,6 +79,8 @@ bool rotateX=false, rotateY=false, rotateZ=false;
 
 float posX = 0.0f, posY = 0.0f, posZ = 0.0f, scale = 1.0f;
 
+string mtlFileName;
+
 // Função MAIN
 int main()
 {
@@ -127,15 +129,15 @@ int main()
 	// Compilando e buildando o programa de shader
 	GLuint shaderID = setupShader();
 
-	// Leitura do arquivo "cube.obj" para obter a textura
-	string textureName = getTextureName("cube.mtl");
-
-	GLuint texID = loadTexture("cube.png");
-
 	int nVerts = 36;
 
 	// Leitura do arquivo "cube.obj" para obter a geometria
 	GLuint VAO = loadSimpleOBJ("cube.obj", nVerts, glm::vec3(0,1,0));
+
+	// Leitura do arquivo "cube.obj" para obter a textura
+	string textureName = getTextureName(mtlFileName);
+
+	GLuint texID = loadTexture(textureName);
 
 
 	glUseProgram(shaderID);
@@ -349,6 +351,14 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 
 			istringstream ssline(line);
 			ssline >> word;
+
+			if (word == "mtllib") {
+				string tokens[1];
+				ssline >> tokens[0];
+
+				mtlFileName = tokens[0];
+			}
+
 			//cout << word << " ";
 			//Mapeando as posições
 			if (word == "v")
