@@ -1,0 +1,13 @@
+﻿  Origem.cpp
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(69,25): warning C4305: 'inicializando': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(293,15): warning C4305: '-=': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(296,15): warning C4305: '+=': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(299,26): warning C4305: 'inicializando': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(608,11): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(609,11): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(613,16): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(614,16): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(615,10): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(616,10): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(657,13): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+  Exericio8.vcxproj -> D:\Documentos\Computação Gráfica\AtividadesCG\GB\Debug\Hello3D.exe
