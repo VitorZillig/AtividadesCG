@@ -1,9 +1,5 @@
-﻿  Camera.cpp
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(30,11): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(31,11): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(35,16): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(36,16): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(37,10): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(38,10): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\curves\Camera.cpp(74,26): warning C4305: 'inicializando': truncamento de 'double' para 'float'
+﻿  Origem.cpp
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(264,29): warning C4305: 'argumento': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(267,28): warning C4305: 'argumento': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(592,13): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
   Exericio8.vcxproj -> D:\Documentos\Computação Gráfica\AtividadesCG\GB\Debug\Hello3D.exe

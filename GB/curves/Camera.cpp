@@ -90,7 +90,6 @@ void Camera::move(GLFWwindow* window, int key, int action)
 }
 
 void Camera::zoom(GLFWwindow* window, double xoffset, double yoffset) {
-	cout << "teste";
 	fov -= (float)yoffset;
 	if (fov < 1.0f)
 		fov = 1.0f;

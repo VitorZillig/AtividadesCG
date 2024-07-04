@@ -119,16 +119,23 @@ int main()
 	// Compilando e buildando o programa de shader
 
 	// Leitura do arquivo "cube.obj" para obter a textura
-	string textureName = getTextureName("cube.mtl", shader.ID);
+	string textureNameCube = getTextureName("bola.mtl", shader.ID);
 
-	GLuint texID = loadTexture("cube.png");
+	string textureNameRacket = getTextureName("ping_pong.mtl", shader.ID);
+
+	GLuint texIDCube = loadTexture(textureNameCube);
+	GLuint texIDRacket = loadTexture(textureNameRacket);
 
 	// Leitura do arquivo "cube.obj" para obter a geometria
-	vector<GLuint> VAO = loadSimpleOBJ("cube.obj", glm::vec3(0, 1, 0));
-	vector<GLuint> VAO2 = loadSimpleOBJ("cube.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO = loadSimpleOBJ("bola.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_triangulated.obj", glm::vec3(0, 1, 0));
 
-	cubo1.initialize(VAO[0], VAO[1], &shader, texID, glm::vec3(0.0f, 0.0f, 0.0f));
-	cubo2.initialize(VAO2[0], VAO2[1], &shader, texID, glm::vec3(1.0f, 0.0f, 0.0f));
+	
+	cout << VAO[1];
+	cout << VAO2[1];
+
+	cubo1.initialize(VAO[0], VAO[1], &shader, texIDCube, glm::vec3(0.0f, 0.0f, 0.0f));
+	cubo2.initialize(VAO2[0], VAO2[1], &shader, texIDRacket, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	glUseProgram(shader.ID);
 
