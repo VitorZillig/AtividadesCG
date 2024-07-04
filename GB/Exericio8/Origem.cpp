@@ -31,7 +31,7 @@ using namespace std;
 
 #include "../curves/Shader.h"
 #include "../curves/Mesh.h"
-
+#include "../curves/Camera.h"
 
 // Protótipo da função de callback do mouse
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -54,23 +54,14 @@ bool rotateX = false, rotateY = false, rotateZ = false;
 
 // Adicionadas as variáveis para possibilitar o deslocamento nos três eixos, bem como a alteração da escala
 
-float posX1 = 0.0f, posY1 = 0.0f, posZ1 = 0.0f, scale = 1.0f;
-float posX2 = 0.0f, posY2 = 0.0f, posZ2 = 0.0f;
 float q, ka, ks, kd;
-float fov = 45.0f;
-bool moveObject = true;
 
-glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 3.0);
-glm::vec3 cameraFront = glm::vec3(0.0, 0.0, -1.0);
-glm::vec3 cameraUp = glm::vec3(0.0, 1.0, 0.0);
-
-bool firstMouse = true;
-float lastX, lastY;
-float sensitivity = 0.05;
-float pitch = 0.0, yaw = -90.0;
+bool moveObject = false;
 
 vector <glm::vec3> curvePoints;
 vector <glm::vec3> controlPoints;
+
+Camera camera;
 
 Mesh cubo1, cubo2;
 
@@ -141,9 +132,7 @@ int main()
 
 	glUseProgram(shader.ID);
 
-	//Matriz de view -- posição e orientação da câmera
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, 3.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-	shader.setMat4("view", value_ptr(view));
+	camera.initialize(&shader, width, height, 0.05f, 0.0f, -90.0, glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 0.0, 3.0), glm::vec3(0.0, 1.0, 0.0));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -175,30 +164,21 @@ int main()
 		glLineWidth(10);
 		glPointSize(20);
 
-		glm::mat4 projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
-		GLint projectionLoc = glGetUniformLocation(shader.ID, "projection");
-		shader.setMat4("projection", value_ptr(projection));
-
-		//Atualizando a posição e orientação da câmera
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-		shader.setMat4("view", value_ptr(view));
-
-		//Atualizando o shader com a posição da câmera
-		glUniformMatrix3fv(glGetUniformLocation(shader.ID, "cameraPos"), 1, FALSE, value_ptr(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z)));
+		camera.update();
 
 		currentCube->update();
 		
 		if (rotateX)
 		{
-			currentCube->rotate(1, glm::vec3(1.0f, 0.0f, 0.0f));
+			currentCube->rotate(glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 		else if (rotateY)
 		{
-			currentCube->rotate(1, glm::vec3(0.0f, 1.0f, 0.0f));
+			currentCube->rotate(glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		else if (rotateZ)
 		{
-			currentCube->rotate(1, glm::vec3(0.0f, 0.0f, 1.0f));
+			currentCube->rotate(glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
 		currentCube->draw();
@@ -213,8 +193,6 @@ int main()
 			i = (i + 1) % curvePoints.size();
 		}
 		
-		
-
 		// Troca os buffers da tela
 		glfwSwapBuffers(window);
 	}
@@ -258,48 +236,31 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	//Adicionados os comandos para a movimentação nos três eixos, além da alteração da escala por meio das teclas de "-" e "+"
 	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-		posY1 += 0.1f;
+		currentCube->translateObject('y', 0.1f);
 	}
 	if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-		posY1 -= 0.1f;
+		currentCube->translateObject('y', -0.1f);
 	}
 	if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-		posX1 -= 0.1f;
+		currentCube->translateObject('x', -0.1f);
 	}
 	if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-		posX1 += 0.1f;
+		currentCube->translateObject('x', 0.1f);
 	}
 	if (key == GLFW_KEY_J && action == GLFW_PRESS) {
-		posZ1 += 0.1f;
+		currentCube->translateObject('z', 0.1f);
 	}
 	if (key == GLFW_KEY_I && action == GLFW_PRESS) {
-		posZ1 -= 0.1f;
+		currentCube->translateObject('z', -0.1f);
 	}
 	if (key == GLFW_KEY_MINUS && action == GLFW_PRESS) {
-		scale -= 0.2;
+		currentCube->setScale(-0.2);
 	}
 	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) {
-		scale += 0.2;
+		currentCube->setScale(0.2);
 	}
 
-	float cameraSpeed = 0.05;
-
-	if (key == GLFW_KEY_O)
-	{
-		cameraPos += cameraFront * cameraSpeed;
-	}
-	if (key == GLFW_KEY_J)
-	{
-		cameraPos -= cameraFront * cameraSpeed;
-	}
-	if (key == GLFW_KEY_K)
-	{
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	}
-	if (key == GLFW_KEY_L)
-	{
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	}
+	camera.move(window, key, action);
 
 	if (key == GLFW_KEY_1) 
 	{
@@ -603,45 +564,12 @@ string getTextureName(string filepath, GLuint shaderID)
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
-	lastX = xpos;
-	lastY = ypos;
-
-	float sensitivity = 0.1f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 direction;
-	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	direction.y = sin(glm::radians(pitch));
-	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(direction);
+	camera.rotate(window, xpos, ypos);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	cout << xoffset;
-	fov -= (float)yoffset;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	camera.zoom(window, xoffset, yoffset);
 }
 
 void generateCurve(int pointsPerSegment) {

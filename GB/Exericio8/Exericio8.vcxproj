@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\curves\Camera.cpp" />
     <ClCompile Include="..\curves\Mesh.cpp" />
     <ClCompile Include="..\curves\Shader.cpp" />
     <ClCompile Include="..\glad.c" />

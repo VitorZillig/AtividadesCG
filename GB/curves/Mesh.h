@@ -17,10 +17,9 @@ public:
 	void update();
 	void draw();
 	void updatePosition(glm::vec3 position);
-	void rotate(float speed = 1, glm::vec3 axis = glm::vec3(0.0, 0.0, 0.0));
-	void increase(float increaseNumber = 0.1f);
-	void decrease(float decreaseNumber = 0.1f);
-	void resetScale(float scale = 1.0f);
+	void translateObject(char axis, float value);
+	void rotate(glm::vec3 axis);
+	void setScale(float scale);
 	void setCurvePoints(vector<glm::vec3> curvePoints);
 	void moveObject();
 
