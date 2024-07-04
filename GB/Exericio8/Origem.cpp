@@ -41,7 +41,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 // Protótipos das funções
-int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color);
+vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color);
 int loadTexture(string path);
 string getTextureName(string filepath, GLuint shaderID);
 void generateCurve(int pointsPerSegment);
@@ -58,7 +58,7 @@ float posX1 = 0.0f, posY1 = 0.0f, posZ1 = 0.0f, scale = 1.0f;
 float posX2 = 0.0f, posY2 = 0.0f, posZ2 = 0.0f;
 float q, ka, ks, kd;
 float fov = 45.0f;
-
+bool moveObject = true;
 
 glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 3.0);
 glm::vec3 cameraFront = glm::vec3(0.0, 0.0, -1.0);
@@ -75,6 +75,8 @@ vector <glm::vec3> controlPoints;
 Mesh cubo1, cubo2;
 
 Mesh* currentCube = &cubo1;
+Mesh* notSelectedCube = &cubo2;
+
 // Função MAIN
 int main()
 {
@@ -130,15 +132,12 @@ int main()
 
 	GLuint texID = loadTexture("cube.png");
 
-	int nVerts = 36;
-
 	// Leitura do arquivo "cube.obj" para obter a geometria
-	GLuint VAO = loadSimpleOBJ("cube.obj", nVerts, glm::vec3(0, 1, 0));
-	GLuint VAO2 = loadSimpleOBJ("cube.obj", nVerts, glm::vec3(0, 1, 0));
+	vector<GLuint> VAO = loadSimpleOBJ("cube.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO2 = loadSimpleOBJ("cube.obj", glm::vec3(0, 1, 0));
 
-	
-	cubo1.initialize(VAO, nVerts, &shader, texID, glm::vec3(0.0f, 0.0f, 0.0f));
-	cubo2.initialize(VAO2, nVerts, &shader, texID, glm::vec3(1.0f, 0.0f, 0.0f));
+	cubo1.initialize(VAO[0], VAO[1], &shader, texID, glm::vec3(0.0f, 0.0f, 0.0f));
+	cubo2.initialize(VAO2[0], VAO2[1], &shader, texID, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	glUseProgram(shader.ID);
 
@@ -187,52 +186,41 @@ int main()
 		//Atualizando o shader com a posição da câmera
 		glUniformMatrix3fv(glGetUniformLocation(shader.ID, "cameraPos"), 1, FALSE, value_ptr(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z)));
 
-		cubo1.updatePosition(glm::vec3(posX1, posY1, posZ1));
-
-		cubo1.update();
-	
+		currentCube->update();
+		
 		if (rotateX)
 		{
-
 			currentCube->rotate(1, glm::vec3(1.0f, 0.0f, 0.0f));
-
 		}
 		else if (rotateY)
 		{
 			currentCube->rotate(1, glm::vec3(0.0f, 1.0f, 0.0f));
-
-
 		}
 		else if (rotateZ)
 		{
 			currentCube->rotate(1, glm::vec3(0.0f, 0.0f, 1.0f));
-
 		}
 
-		cubo1.draw();
+		currentCube->draw();
 
-		cubo2.update();
-		cubo2.draw();
+		notSelectedCube->update();
+		notSelectedCube->draw();
 
-		glm::vec3 pointOnCurve = curvePoints.at(i);
-		vector <glm::vec3> aux;
-		aux.push_back(pointOnCurve);
 
-		posX1 = pointOnCurve.x;
-		posY1 = pointOnCurve.y;
-		posZ1 = pointOnCurve.z;
-
-		cubo1.updatePosition(glm::vec3(pointOnCurve.x, pointOnCurve.y, pointOnCurve.z));
-
-		i = (i + 1) % curvePoints.size();
+		if (moveObject) {
+			glm::vec3 pointOnCurve = curvePoints.at(i);
+			currentCube->updatePosition(glm::vec3(pointOnCurve.x, pointOnCurve.y, pointOnCurve.z));
+			i = (i + 1) % curvePoints.size();
+		}
+		
 		
 
 		// Troca os buffers da tela
 		glfwSwapBuffers(window);
 	}
 	// Pede pra OpenGL desalocar os buffers
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteVertexArrays(1, &VAO2);
+	glDeleteVertexArrays(1, &VAO[0]);
+	glDeleteVertexArrays(1, &VAO2[0]);
 
 	// Finaliza a execução da GLFW, limpando os recursos alocados por ela
 	glfwTerminate();
@@ -313,23 +301,36 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
 
-	if (key == GLFW_KEY_0) 
+	if (key == GLFW_KEY_1) 
 	{
+		rotateX = false;
+		rotateY = false;
+		rotateZ = false;
+
 		currentCube = &cubo1;
+		notSelectedCube = &cubo2;
 	}
-	if (key == GLFW_KEY_1)
+	if (key == GLFW_KEY_2)
 	{
+		rotateX = false;
+		rotateY = false;
+		rotateZ = false;
+
 		currentCube = &cubo2;
+		notSelectedCube = &cubo1;
+	}
+	if (key == GLFW_KEY_3)
+	{
+		moveObject = false;
+	}
+	if (key == GLFW_KEY_4)
+	{
+		moveObject = true;
 	}
 }
 
-//Esta função está bastante hardcoded - objetivo é compilar e "buildar" um programa de
-// shader simples e único neste exemplo de código
-// O código fonte do vertex e fragment shader está nos arrays vertexShaderSource e
-// fragmentShader source no iniçio deste arquivo
-
 // Adição da função "loadSimpleOBJ"
-int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
+vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color)
 {
 	vector <glm::vec3> vertices;
 	vector <GLuint> indices;
@@ -428,7 +429,6 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 	}
 	inputFile.close();
 	GLuint VBO, VAO;
-	nVerts = vbuffer.size() / 11; // 3 pos + 3 cor + 3 normal + 2 texcoord
 	//Geração do identificador do VBO
 	glGenBuffers(1, &VBO);
 	//Faz a conexão (vincula) do buffer como um buffer de array
@@ -465,7 +465,9 @@ int loadSimpleOBJ(string filepath, int& nVerts, glm::vec3 color)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// Desvincula o VAO (é uma boa prática desvincular qualquer buffer ou array para evitar bugs medonhos)
 	glBindVertexArray(0);
-	return VAO;
+	
+
+	return {VAO, vbuffer.size()/11};
 }
 
 // Adição da função "loadTexture"

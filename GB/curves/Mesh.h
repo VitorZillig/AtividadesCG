@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <vector>
 #include "Shader.h"
 
 
@@ -21,7 +21,8 @@ public:
 	void increase(float increaseNumber = 0.1f);
 	void decrease(float decreaseNumber = 0.1f);
 	void resetScale(float scale = 1.0f);
-	void selectMesh();
+	void setCurvePoints(vector<glm::vec3> curvePoints);
+	void moveObject();
 
 protected:
 	GLuint VAO; //Identificador do Vertex Array Object - Vértices e seus atributos
@@ -32,6 +33,7 @@ protected:
 	glm::vec3 scale;
 	float angle;
 	glm::vec3 axis;
+	vector<glm::vec3> curvePoints;
 
 	//Referência (endereço) do shader
 	Shader* shader;

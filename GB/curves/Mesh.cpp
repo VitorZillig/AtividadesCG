@@ -1,5 +1,5 @@
 #include "Mesh.h"
-
+#include <vector>
 void Mesh::initialize(GLuint VAO, int nVertices, Shader* shader, GLuint textureID, glm::vec3 position, glm::vec3 scale, float angle, glm::vec3 axis)
 {
 	this->VAO = VAO;
@@ -10,6 +10,7 @@ void Mesh::initialize(GLuint VAO, int nVertices, Shader* shader, GLuint textureI
 	this->angle = angle;
 	this->axis = axis;
 	this->textureID = textureID;
+	this->curvePoints;
 }
 
 void Mesh::update()
@@ -78,6 +79,13 @@ void Mesh::resetScale(float scale) {
 	shader->setMat4("model", glm::value_ptr(model));
 }
 
-void Mesh::selectMesh() {
+void Mesh::setCurvePoints(vector<glm::vec3> curvePoints) {
+	this->curvePoints = curvePoints;
+}
 
+void Mesh::moveObject() {
+	int i = 0;
+	glm::vec3 pointOnCurve = this->curvePoints.at(i);
+	this->updatePosition(glm::vec3(pointOnCurve.x, pointOnCurve.y, pointOnCurve.z));
+	i = (i + 1) % curvePoints.size();
 }
