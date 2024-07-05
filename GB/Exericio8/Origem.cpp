@@ -63,10 +63,10 @@ vector <glm::vec3> curvePointsRaquete;
 Camera camera;
 
 
-Mesh bolinha, raquete, mesa;
+Mesh bolinha, raqueteLeft, raqueteRight, mesa;
 
 Mesh* currentObject = &bolinha;
-Mesh* notSelectedObject = &raquete;
+Mesh* notSelectedObject = &raqueteRight;
 
 // Função MAIN
 int main()
@@ -130,11 +130,13 @@ int main()
 	// Leitura do arquivo "cube.obj" para obter a geometria
 	vector<GLuint> VAO = loadSimpleOBJ("bola.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
-	vector<GLuint> VAO3 = loadSimpleOBJ("ping_pong_table.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO3 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO4 = loadSimpleOBJ("ping_pong_table.obj", glm::vec3(0, 1, 0));
 
 	bolinha.initialize(VAO[0], VAO[1], &shader, texIDCube, glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
-	raquete.initialize(VAO2[0], VAO2[1], &shader, texIDBat, glm::vec3(1.0f, 0.0f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
-	mesa.initialize(VAO3[0], VAO3[1], &shader, texIDTable, glm::vec3(-0.5f, -0.9f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
+	raqueteRight.initialize(VAO2[0], VAO2[1], &shader, texIDBat, glm::vec3(1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
+	raqueteLeft.initialize(VAO3[0], VAO3[1], &shader, texIDBat, glm::vec3(-1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
+	mesa.initialize(VAO4[0], VAO4[1], &shader, texIDTable, glm::vec3(-0.2f, -0.85f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
 
 
 	glUseProgram(shader.ID);
@@ -159,15 +161,20 @@ int main()
 	int iBolinha = 0;
 	Bezier trajetoriaBolinha;
 	trajetoriaBolinha.loadControlPoints("controlPoints2.txt");
-	trajetoriaBolinha.generateCurve(700);
+	trajetoriaBolinha.generateCurve(300);
 	int nbCurvePointsBolinha = trajetoriaBolinha.getNbCurvePoints();
 
-	int iRaquete = 0;
-	Bezier trajetoriaRaquete;
-	trajetoriaRaquete.loadControlPoints("controlPoints3.txt");
-	trajetoriaRaquete.generateCurve(1200);
-	int nbCurvePointsRaquete = trajetoriaRaquete.getNbCurvePoints();
+	int iRaqueteRight = 0;
+	Bezier trajetoriaRaqueteRight;
+	trajetoriaRaqueteRight.loadControlPoints("controlPoints3.txt");
+	trajetoriaRaqueteRight.generateCurve(550);
+	int nbCurvePointsRaqueteRight = trajetoriaRaqueteRight.getNbCurvePoints();
 
+	int iRaqueteLeft = 0;
+	Bezier trajetoriaRaqueteLeft;
+	trajetoriaRaqueteLeft.loadControlPoints("controlPoints4.txt");
+	trajetoriaRaqueteLeft.generateCurve(550);
+	int nbCurvePointsRaqueteLeft = trajetoriaRaqueteLeft.getNbCurvePoints();
 	
 	// Loop da aplicação - "game loop"
 	while (!glfwWindowShouldClose(window))
@@ -208,15 +215,21 @@ int main()
 		notSelectedObject->update();
 		notSelectedObject->draw();
 
+		raqueteLeft.update();
+		raqueteLeft.draw();
+
 		if (moveObject) {
 			glm::vec3 pointOnCurveBolinha = trajetoriaBolinha.getPointOnCurve(iBolinha);
 			bolinha.updatePosition(glm::vec3(pointOnCurveBolinha.x, pointOnCurveBolinha.y, pointOnCurveBolinha.z));
 			iBolinha = (iBolinha + 1) % nbCurvePointsBolinha;
 
-			glm::vec3 pointOnCurveRaquete = trajetoriaRaquete.getPointOnCurve(iRaquete);
-			raquete.updatePosition(glm::vec3(pointOnCurveRaquete.x, pointOnCurveRaquete.y, pointOnCurveRaquete.z));
-			iRaquete = (iRaquete + 1) % nbCurvePointsRaquete;
+			glm::vec3 pointOnCurveRaqueteRight = trajetoriaRaqueteRight.getPointOnCurve(iRaqueteRight);
+			raqueteRight.updatePosition(glm::vec3(pointOnCurveRaqueteRight.x, pointOnCurveRaqueteRight.y, pointOnCurveRaqueteRight.z));
+			iRaqueteRight = (iRaqueteRight + 1) % nbCurvePointsRaqueteRight;
 
+			glm::vec3 pointOnCurveRaqueteLeft = trajetoriaRaqueteLeft.getPointOnCurve(iRaqueteLeft);
+			raqueteLeft.updatePosition(glm::vec3(pointOnCurveRaqueteLeft.x, pointOnCurveRaqueteLeft.y, pointOnCurveRaqueteLeft.z));
+			iRaqueteLeft = (iRaqueteLeft + 1) % nbCurvePointsRaqueteLeft;
 		}
 		
 		// Troca os buffers da tela
@@ -295,7 +308,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotateZ = false;
 
 		currentObject = &bolinha;
-		notSelectedObject = &raquete;
+		notSelectedObject = &raqueteRight;
 	}
 	if (key == GLFW_KEY_2)
 	{
@@ -303,7 +316,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotateY = false;
 		rotateZ = false;
 
-		currentObject = &raquete;
+		currentObject = &raqueteRight;
 		notSelectedObject = &bolinha;
 	}
 	if (key == GLFW_KEY_3)
