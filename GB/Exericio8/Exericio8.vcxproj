@@ -148,7 +148,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\curves\Bezier.cpp" />
     <ClCompile Include="..\curves\Camera.cpp" />
+    <ClCompile Include="..\curves\Curve.cpp" />
     <ClCompile Include="..\curves\Mesh.cpp" />
     <ClCompile Include="..\curves\Shader.cpp" />
     <ClCompile Include="..\glad.c" />

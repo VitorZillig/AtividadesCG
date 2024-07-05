@@ -13,12 +13,12 @@ class Mesh
 public:
 	Mesh() {}
 	~Mesh() {}
-	void initialize(GLuint VAO, int nVertices, Shader* shader, GLuint textureID, glm::vec3 position = glm::vec3(0.0, 0.0, 0.0), glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0), float angle = 0.0, glm::vec3 axis = glm::vec3(0.0, 0.0, 1.0));
+	void initialize(GLuint VAO, int nVertices, Shader* shader, GLuint textureID, glm::vec3 position = glm::vec3(0.0, 0.0, 0.0), float scale = 1.0f, float angle = 0.0, glm::vec3 axis = glm::vec3(0.0, 0.0, 1.0));
 	void update();
 	void draw();
 	void updatePosition(glm::vec3 position);
 	void translateObject(char axis, float value);
-	void rotate(glm::vec3 axis);
+	void rotate(glm::vec3 axis, float angle = 0.0f);
 	void setScale(float scale);
 	void setCurvePoints(vector<glm::vec3> curvePoints);
 	void moveObject();
@@ -29,7 +29,7 @@ protected:
 
 	//Informações sobre as transformações a serem aplicadas no objeto
 	glm::vec3 position;
-	glm::vec3 scale;
+	float scale;
 	float angle;
 	glm::vec3 axis;
 	vector<glm::vec3> curvePoints;

@@ -1,6 +1,6 @@
 #include "Mesh.h"
 #include <vector>
-void Mesh::initialize(GLuint VAO, int nVertices, Shader* shader, GLuint textureID, glm::vec3 position, glm::vec3 scale, float angle, glm::vec3 axis)
+void Mesh::initialize(GLuint VAO, int nVertices, Shader* shader, GLuint textureID, glm::vec3 position, float scale, float angle, glm::vec3 axis)
 {
 	this->VAO = VAO;
 	this->nVertices = nVertices;
@@ -18,7 +18,7 @@ void Mesh::update()
 	glm::mat4 model = glm::mat4(1);
 	model = glm::translate(model, position);
 	model = glm::rotate(model, glm::radians(angle), axis);
-	model = glm::scale(model, scale);
+	model = glm::scale(model, glm::vec3(scale));
 	shader->setMat4("model", glm::value_ptr(model));
 }
 
@@ -43,23 +43,23 @@ void Mesh::translateObject(char axis, float value) {
 	else this->position.z += value;
 }
 
-void Mesh::rotate(glm::vec3 axis) {
+void Mesh::rotate(glm::vec3 axis, float angle) {
 	glm::mat4 model = glm::mat4(1);
 	model = glm::translate(model, position);
-	model = glm::rotate(model, (GLfloat)glfwGetTime(), axis);
-	model = glm::scale(model, scale);
+	model = glm::rotate(model, angle == 0.0f ? (GLfloat)glfwGetTime() : angle, axis);
+	model = glm::scale(model, glm::vec3(scale));
 	shader->setMat4("model", glm::value_ptr(model));
 }
 
 void Mesh::setScale(float scaleValue) {
-	float inc = this->scale.x + scaleValue;
+	float inc = this->scale + scaleValue;
 
-	this->scale = glm::vec3(inc);
+	this->scale = inc;
 
 	glm::mat4 model = glm::mat4(1);
 	model = glm::translate(model, position);
 	model = glm::rotate(model, glm::radians(angle), axis);
-	model = glm::scale(model, scale);
+	model = glm::scale(model, glm::vec3(scale));
 	shader->setMat4("model", glm::value_ptr(model));
 }
 

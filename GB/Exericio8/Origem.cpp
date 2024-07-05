@@ -32,6 +32,7 @@ using namespace std;
 #include "../curves/Shader.h"
 #include "../curves/Mesh.h"
 #include "../curves/Camera.h"
+#include "../curves/Bezier.h"
 
 // Protótipo da função de callback do mouse
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -44,8 +45,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color);
 int loadTexture(string path);
 string getTextureName(string filepath, GLuint shaderID);
-void generateCurve(int pointsPerSegment);
-vector<glm::vec3> loadControlPoints(string filepath);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
 const GLuint WIDTH = 1000, HEIGHT = 1000;
@@ -58,15 +57,16 @@ float q, ka, ks, kd;
 
 bool moveObject = false;
 
-vector <glm::vec3> curvePoints;
-vector <glm::vec3> controlPoints;
+vector <glm::vec3> curvePointsBolinha;
+vector <glm::vec3> curvePointsRaquete;
 
 Camera camera;
 
-Mesh cubo1, cubo2;
 
-Mesh* currentCube = &cubo1;
-Mesh* notSelectedCube = &cubo2;
+Mesh bolinha, raquete, mesa;
+
+Mesh* currentObject = &bolinha;
+Mesh* notSelectedObject = &raquete;
 
 // Função MAIN
 int main()
@@ -120,22 +120,22 @@ int main()
 
 	// Leitura do arquivo "cube.obj" para obter a textura
 	string textureNameCube = getTextureName("bola.mtl", shader.ID);
-
-	string textureNameRacket = getTextureName("ping_pong.mtl", shader.ID);
+	string textureNameRacket = getTextureName("ping_pong_bat.mtl", shader.ID);
+	string textureNameTable = getTextureName("ping_pong_table.mtl", shader.ID);
 
 	GLuint texIDCube = loadTexture(textureNameCube);
-	GLuint texIDRacket = loadTexture(textureNameRacket);
+	GLuint texIDBat = loadTexture(textureNameRacket);
+	GLuint texIDTable = loadTexture(textureNameTable);
 
 	// Leitura do arquivo "cube.obj" para obter a geometria
 	vector<GLuint> VAO = loadSimpleOBJ("bola.obj", glm::vec3(0, 1, 0));
-	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_triangulated.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO3 = loadSimpleOBJ("ping_pong_table.obj", glm::vec3(0, 1, 0));
 
-	
-	cout << VAO[1];
-	cout << VAO2[1];
+	bolinha.initialize(VAO[0], VAO[1], &shader, texIDCube, glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
+	raquete.initialize(VAO2[0], VAO2[1], &shader, texIDBat, glm::vec3(1.0f, 0.0f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
+	mesa.initialize(VAO3[0], VAO3[1], &shader, texIDTable, glm::vec3(-0.5f, -0.9f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
 
-	cubo1.initialize(VAO[0], VAO[1], &shader, texIDCube, glm::vec3(0.0f, 0.0f, 0.0f));
-	cubo2.initialize(VAO2[0], VAO2[1], &shader, texIDRacket, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	glUseProgram(shader.ID);
 
@@ -153,11 +153,22 @@ int main()
 	shader.setVec3("lightPos", 0.0, 0.0, 0.0);
 	shader.setVec3("lightColor", 1.0, 1.0, 0.0);
 
-	int i = 0;
+	
+	//std::vector<glm::vec3> controlPointsBolinha = loadControlPoints("controlPoints2.txt");
 
-	controlPoints = loadControlPoints("controlPoints.txt");
-	generateCurve(500);
+	int iBolinha = 0;
+	Bezier trajetoriaBolinha;
+	trajetoriaBolinha.loadControlPoints("controlPoints2.txt");
+	trajetoriaBolinha.generateCurve(700);
+	int nbCurvePointsBolinha = trajetoriaBolinha.getNbCurvePoints();
 
+	int iRaquete = 0;
+	Bezier trajetoriaRaquete;
+	trajetoriaRaquete.loadControlPoints("controlPoints3.txt");
+	trajetoriaRaquete.generateCurve(1200);
+	int nbCurvePointsRaquete = trajetoriaRaquete.getNbCurvePoints();
+
+	
 	// Loop da aplicação - "game loop"
 	while (!glfwWindowShouldClose(window))
 	{
@@ -173,31 +184,39 @@ int main()
 
 		camera.update();
 
-		currentCube->update();
+		//mesa.rotate(glm::vec3(0.0, 0.0, 1.0), 90.0f);
+		mesa.rotate(glm::vec3(1.0f, 1.0f, 1.0f),10.5f);
+		mesa.draw();
+		
+		currentObject->update();
 		
 		if (rotateX)
 		{
-			currentCube->rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+			currentObject->rotate(glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		else if (rotateY)
 		{
-			currentCube->rotate(glm::vec3(0.0f, 1.0f, 0.0f));
+			currentObject->rotate(glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 		else if (rotateZ)
 		{
-			currentCube->rotate(glm::vec3(0.0f, 0.0f, 1.0f));
+			currentObject->rotate(glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
-		currentCube->draw();
+		currentObject->draw();
 
-		notSelectedCube->update();
-		notSelectedCube->draw();
-
+		notSelectedObject->update();
+		notSelectedObject->draw();
 
 		if (moveObject) {
-			glm::vec3 pointOnCurve = curvePoints.at(i);
-			currentCube->updatePosition(glm::vec3(pointOnCurve.x, pointOnCurve.y, pointOnCurve.z));
-			i = (i + 1) % curvePoints.size();
+			glm::vec3 pointOnCurveBolinha = trajetoriaBolinha.getPointOnCurve(iBolinha);
+			bolinha.updatePosition(glm::vec3(pointOnCurveBolinha.x, pointOnCurveBolinha.y, pointOnCurveBolinha.z));
+			iBolinha = (iBolinha + 1) % nbCurvePointsBolinha;
+
+			glm::vec3 pointOnCurveRaquete = trajetoriaRaquete.getPointOnCurve(iRaquete);
+			raquete.updatePosition(glm::vec3(pointOnCurveRaquete.x, pointOnCurveRaquete.y, pointOnCurveRaquete.z));
+			iRaquete = (iRaquete + 1) % nbCurvePointsRaquete;
+
 		}
 		
 		// Troca os buffers da tela
@@ -243,28 +262,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	//Adicionados os comandos para a movimentação nos três eixos, além da alteração da escala por meio das teclas de "-" e "+"
 	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-		currentCube->translateObject('y', 0.1f);
+		currentObject->translateObject('y', 0.1f);
 	}
 	if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-		currentCube->translateObject('y', -0.1f);
+		currentObject->translateObject('y', -0.1f);
 	}
 	if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-		currentCube->translateObject('x', -0.1f);
+		currentObject->translateObject('x', -0.1f);
 	}
 	if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-		currentCube->translateObject('x', 0.1f);
+		currentObject->translateObject('x', 0.1f);
 	}
 	if (key == GLFW_KEY_J && action == GLFW_PRESS) {
-		currentCube->translateObject('z', 0.1f);
+		currentObject->translateObject('z', 0.1f);
 	}
 	if (key == GLFW_KEY_I && action == GLFW_PRESS) {
-		currentCube->translateObject('z', -0.1f);
+		currentObject->translateObject('z', -0.1f);
 	}
 	if (key == GLFW_KEY_MINUS && action == GLFW_PRESS) {
-		currentCube->setScale(-0.2);
+		currentObject->setScale(-0.2);
 	}
 	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS) {
-		currentCube->setScale(0.2);
+		currentObject->setScale(0.2);
 	}
 
 	camera.move(window, key, action);
@@ -275,8 +294,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotateY = false;
 		rotateZ = false;
 
-		currentCube = &cubo1;
-		notSelectedCube = &cubo2;
+		currentObject = &bolinha;
+		notSelectedObject = &raquete;
 	}
 	if (key == GLFW_KEY_2)
 	{
@@ -284,8 +303,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		rotateY = false;
 		rotateZ = false;
 
-		currentCube = &cubo2;
-		notSelectedCube = &cubo1;
+		currentObject = &raquete;
+		notSelectedObject = &bolinha;
 	}
 	if (key == GLFW_KEY_3)
 	{
@@ -577,83 +596,4 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.zoom(window, xoffset, yoffset);
-}
-
-void generateCurve(int pointsPerSegment) {
-
-
-	glm::mat4 M = glm::mat4(-1, 3, -3, 1,
-		3, -6, 3, 0,
-		-3, 3, 0, 0,
-		1, 0, 0, 0
-	);
-
-
-	float step = 1.0 / (float)pointsPerSegment;
-
-	float t = 0;
-
-	int nControlPoints = controlPoints.size();
-
-	for (int i = 0; i < nControlPoints - 3; i += 3)
-	{
-
-		for (float t = 0.0; t <= 1.0; t += step)
-		{
-			glm::vec3 p;
-
-			glm::vec4 T(t * t * t, t * t, t, 1);
-
-			glm::vec3 P0 = controlPoints[i];
-			glm::vec3 P1 = controlPoints[i + 1];
-			glm::vec3 P2 = controlPoints[i + 2];
-			glm::vec3 P3 = controlPoints[i + 3];
-
-			glm::mat4x3 G(P0, P1, P2, P3);
-
-			p = G * M * T;  //---------
-			
-			curvePoints.push_back(p);
-		}
-	}
-}
-
-vector<glm::vec3> loadControlPoints(string filepath) {
-	vector <glm::vec3> vertices;
-
-	ifstream inputFile;
-
-	inputFile.open(filepath.c_str());
-	if (inputFile.is_open())
-	{
-		char line[100];
-		string sline;
-
-		while (!inputFile.eof())
-		{
-			inputFile.getline(line, 100);
-			sline = line;
-
-			string word;
-
-			istringstream ssline(line);
-			ssline >> word;
-			//cout << word << " ";
-			//Mapeando as posições
-			if (word == "v")
-			{
-				glm::vec3 v;
-				ssline >> v.x >> v.y >> v.z;
-
-				vertices.push_back(v);
-			}
-		}
-	}
-	else
-	{
-		cout << "Problema ao encontrar o arquivo " << filepath << endl;
-	}
-	inputFile.close();
-	return vertices;
-
 }

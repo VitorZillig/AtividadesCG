@@ -1,5 +1,4 @@
 ﻿  Origem.cpp
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(264,29): warning C4305: 'argumento': truncamento de 'double' para 'float'
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(267,28): warning C4305: 'argumento': truncamento de 'double' para 'float'
-D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(592,13): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(283,31): warning C4305: 'argumento': truncamento de 'double' para 'float'
+D:\Documentos\Computação Gráfica\AtividadesCG\GB\Exericio8\Origem.cpp(286,30): warning C4305: 'argumento': truncamento de 'double' para 'float'
   Exericio8.vcxproj -> D:\Documentos\Computação Gráfica\AtividadesCG\GB\Debug\Hello3D.exe
