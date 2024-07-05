@@ -47,7 +47,7 @@ int loadTexture(string path);
 string getTextureName(string filepath, GLuint shaderID);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
-const GLuint WIDTH = 1000, HEIGHT = 1000;
+const GLuint WIDTH = 1600, HEIGHT = 1000;
 
 bool rotateX = false, rotateY = false, rotateZ = false;
 
@@ -55,7 +55,7 @@ bool rotateX = false, rotateY = false, rotateZ = false;
 
 float q, ka, ks, kd;
 
-bool moveObject = false;
+bool startScene = false;
 
 vector <glm::vec3> curvePointsBolinha;
 vector <glm::vec3> curvePointsRaquete;
@@ -119,21 +119,21 @@ int main()
 	// Compilando e buildando o programa de shader
 
 	// Leitura do arquivo "cube.obj" para obter a textura
-	string textureNameCube = getTextureName("bola.mtl", shader.ID);
+	string textureNameBolinha = getTextureName("ping_pong_bolinha.mtl", shader.ID);
 	string textureNameRacket = getTextureName("ping_pong_bat.mtl", shader.ID);
 	string textureNameTable = getTextureName("ping_pong_table.mtl", shader.ID);
 
-	GLuint texIDCube = loadTexture(textureNameCube);
+	GLuint texIDBolinha = loadTexture(textureNameBolinha);
 	GLuint texIDBat = loadTexture(textureNameRacket);
 	GLuint texIDTable = loadTexture(textureNameTable);
 
 	// Leitura do arquivo "cube.obj" para obter a geometria
-	vector<GLuint> VAO = loadSimpleOBJ("bola.obj", glm::vec3(0, 1, 0));
+	vector<GLuint> VAO = loadSimpleOBJ("ping_pong_bolinha.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO3 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO4 = loadSimpleOBJ("ping_pong_table.obj", glm::vec3(0, 1, 0));
 
-	bolinha.initialize(VAO[0], VAO[1], &shader, texIDCube, glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
+	bolinha.initialize(VAO[0], VAO[1], &shader, texIDBolinha, glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
 	raqueteRight.initialize(VAO2[0], VAO2[1], &shader, texIDBat, glm::vec3(1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
 	raqueteLeft.initialize(VAO3[0], VAO3[1], &shader, texIDBat, glm::vec3(-1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
 	mesa.initialize(VAO4[0], VAO4[1], &shader, texIDTable, glm::vec3(-0.2f, -0.85f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
@@ -155,24 +155,21 @@ int main()
 	shader.setVec3("lightPos", 0.0, 0.0, 0.0);
 	shader.setVec3("lightColor", 1.0, 1.0, 0.0);
 
-	
-	//std::vector<glm::vec3> controlPointsBolinha = loadControlPoints("controlPoints2.txt");
-
 	int iBolinha = 0;
 	Bezier trajetoriaBolinha;
-	trajetoriaBolinha.loadControlPoints("controlPoints2.txt");
+	trajetoriaBolinha.loadControlPoints("controlPointsBolinha.txt");
 	trajetoriaBolinha.generateCurve(300);
 	int nbCurvePointsBolinha = trajetoriaBolinha.getNbCurvePoints();
 
 	int iRaqueteRight = 0;
 	Bezier trajetoriaRaqueteRight;
-	trajetoriaRaqueteRight.loadControlPoints("controlPoints3.txt");
+	trajetoriaRaqueteRight.loadControlPoints("controlPointsRaqueteRight.txt");
 	trajetoriaRaqueteRight.generateCurve(550);
 	int nbCurvePointsRaqueteRight = trajetoriaRaqueteRight.getNbCurvePoints();
 
 	int iRaqueteLeft = 0;
 	Bezier trajetoriaRaqueteLeft;
-	trajetoriaRaqueteLeft.loadControlPoints("controlPoints4.txt");
+	trajetoriaRaqueteLeft.loadControlPoints("controlPointsRaqueteLeft.txt");
 	trajetoriaRaqueteLeft.generateCurve(550);
 	int nbCurvePointsRaqueteLeft = trajetoriaRaqueteLeft.getNbCurvePoints();
 	
@@ -218,7 +215,7 @@ int main()
 		raqueteLeft.update();
 		raqueteLeft.draw();
 
-		if (moveObject) {
+		if (startScene) {
 			glm::vec3 pointOnCurveBolinha = trajetoriaBolinha.getPointOnCurve(iBolinha);
 			bolinha.updatePosition(glm::vec3(pointOnCurveBolinha.x, pointOnCurveBolinha.y, pointOnCurveBolinha.z));
 			iBolinha = (iBolinha + 1) % nbCurvePointsBolinha;
@@ -319,13 +316,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		currentObject = &raqueteRight;
 		notSelectedObject = &bolinha;
 	}
-	if (key == GLFW_KEY_3)
+	if (key == GLFW_KEY_E)
 	{
-		moveObject = false;
+		startScene = false;
 	}
-	if (key == GLFW_KEY_4)
+	if (key == GLFW_KEY_P)
 	{
-		moveObject = true;
+		startScene = true;
 	}
 }
 
