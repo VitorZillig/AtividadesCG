@@ -32,8 +32,6 @@ using namespace std;
 #include "../curves/Mesh.h"
 #include "../curves/Camera.h"
 #include "../curves/Bezier.h"
-#include "../libconfig-1.7.3/lib/libconfig.h++"
-//using namespace libconfig;
 
 // Protótipo da função de callback do mouse
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -46,6 +44,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color);
 int loadTexture(string path);
 string getTextureName(string filepath);
+void readConfigFile(string path, string obj);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
 const GLuint WIDTH = 1600, HEIGHT = 1000;
@@ -54,9 +53,17 @@ bool rotateX = false, rotateY = false, rotateZ = false;
 
 float q, ka, ks, kd;
 
-//Config cfg;
-
 bool startScene = false;
+
+string nomeOBJ, controlPointsName;
+
+glm::vec3 pos, eixo;
+float escala, angulo;
+
+glm::vec3 lightPos, lightColor;
+
+float sensitivity, pitch, yaw;
+glm::vec3 cameraFront, cameraPos, cameraUp;
 
 Camera camera;
 
@@ -115,20 +122,36 @@ int main()
 	Shader shader("Phong.vs", "Phong.fs");
 
 	// Leitura do arquivo "cube.obj" para obter a geometria
-	vector<GLuint> VAO = loadSimpleOBJ("ping_pong_bolinha.obj", glm::vec3(0, 1, 0));
-	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
-	vector<GLuint> VAO3 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
-	vector<GLuint> VAO4 = loadSimpleOBJ("ping_pong_table.obj", glm::vec3(0, 1, 0));
 
-	bolinha.initialize(VAO[0], VAO[1], &shader, VAO[2], glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
-	raqueteRight.initialize(VAO2[0], VAO2[1], &shader, VAO2[2], glm::vec3(1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
-	raqueteLeft.initialize(VAO3[0], VAO3[1], &shader, VAO3[2], glm::vec3(-1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
-	mesa.initialize(VAO4[0], VAO4[1], &shader, VAO4[2], glm::vec3(-0.2f, -0.85f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
+	readConfigFile("config.txt", "bolinha");
+	vector<GLuint> VAO = loadSimpleOBJ(nomeOBJ, glm::vec3(0, 1, 0));
+	bolinha.initialize(VAO[0], VAO[1], &shader, VAO[2], pos, escala, angulo, eixo);
+	Bezier trajetoriaBolinha;
+	trajetoriaBolinha.loadControlPoints(controlPointsName);
 
+
+	readConfigFile("config.txt", "rightBat");
+	VAO = loadSimpleOBJ(nomeOBJ, glm::vec3(0, 1, 0));
+	raqueteRight.initialize(VAO[0], VAO[1], &shader, VAO[2], pos, escala, angulo, eixo);
+	Bezier trajetoriaRaqueteRight;
+	trajetoriaRaqueteRight.loadControlPoints(controlPointsName);
+
+
+	readConfigFile("config.txt", "leftBat");
+	raqueteLeft.initialize(VAO[0], VAO[1], &shader, VAO[2], pos, escala, angulo, eixo);
+	Bezier trajetoriaRaqueteLeft;
+	trajetoriaRaqueteLeft.loadControlPoints(controlPointsName);
+
+
+	readConfigFile("config.txt", "table");
+	VAO = loadSimpleOBJ(nomeOBJ, glm::vec3(0, 1, 0));
+	mesa.initialize(VAO[0], VAO[1], &shader, VAO[2], pos, escala, angulo, eixo);
 
 	glUseProgram(shader.ID);
 
-	camera.initialize(&shader, width, height, 0.05f, 0.0f, -90.0, glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 0.0, 3.0), glm::vec3(0.0, 1.0, 0.0));
+
+	readConfigFile("config.txt", "camera");
+	camera.initialize(&shader, width, height, sensitivity, pitch, yaw, cameraFront, cameraPos, glm::vec3(cameraUp.x, cameraUp.y, 0.0));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -138,25 +161,20 @@ int main()
 	shader.setFloat("ks", ks);
 	shader.setFloat("q", q);
 
+	readConfigFile("config.txt", "light");
 	//Definindo a fonte de luz pontual
-	shader.setVec3("lightPos", 0.0, 0.0, 0.0);
-	shader.setVec3("lightColor", 1.0, 1.0, 0.0);
+	shader.setVec3("lightPos", lightPos.x, lightPos.y, lightPos.z);
+	shader.setVec3("lightColor", lightColor.r, lightColor.g, lightColor.b);
 
 	int iBolinha = 0;
-	Bezier trajetoriaBolinha;
-	trajetoriaBolinha.loadControlPoints("controlPointsBolinha.txt");
 	trajetoriaBolinha.generateCurve(300);
 	int nbCurvePointsBolinha = trajetoriaBolinha.getNbCurvePoints();
 
 	int iRaqueteRight = 0;
-	Bezier trajetoriaRaqueteRight;
-	trajetoriaRaqueteRight.loadControlPoints("controlPointsRaqueteRight.txt");
 	trajetoriaRaqueteRight.generateCurve(550);
 	int nbCurvePointsRaqueteRight = trajetoriaRaqueteRight.getNbCurvePoints();
 
 	int iRaqueteLeft = 0;
-	Bezier trajetoriaRaqueteLeft;
-	trajetoriaRaqueteLeft.loadControlPoints("controlPointsRaqueteLeft.txt");
 	trajetoriaRaqueteLeft.generateCurve(550);
 	int nbCurvePointsRaqueteLeft = trajetoriaRaqueteLeft.getNbCurvePoints();
 	
@@ -220,9 +238,6 @@ int main()
 	}
 	// Pede pra OpenGL desalocar os buffers
 	glDeleteVertexArrays(1, &VAO[0]);
-	glDeleteVertexArrays(1, &VAO2[0]);
-	glDeleteVertexArrays(1, &VAO3[0]);
-	glDeleteVertexArrays(1, &VAO4[0]);
 
 	// Finaliza a execução da GLFW, limpando os recursos alocados por ela
 	glfwTerminate();
@@ -609,4 +624,84 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.zoom(window, xoffset, yoffset);
+}
+
+void readConfigFile(string path, string obj) {
+	ifstream inputFile;
+	inputFile.open(path.c_str());
+	if (inputFile.is_open())
+	{
+		char line[100];
+		string sline;
+
+
+		while (!inputFile.eof())
+		{
+			inputFile.getline(line, 100);
+			sline = line;
+
+			string word;
+
+			istringstream ssline(line);
+			ssline >> word;
+			//cout << word << " ";
+			//Mapeando as posições
+			if (word == obj) {
+				if (word == "light") {
+					string tokens[6];
+					float parsedValues[6];
+					ssline >> tokens[0] >> tokens[1] >> tokens[2] >> tokens[3] >> tokens[4] >> tokens[5];
+
+					for (size_t i = 0; i < 5; i++)
+					{
+						parsedValues[i] = std::stof(tokens[i]);
+					}
+
+					lightPos = glm::vec3(parsedValues[0], parsedValues[1], parsedValues[2]);
+					lightColor = glm::vec3(parsedValues[3], parsedValues[4], parsedValues[5]);
+
+
+				}
+				else if (word == "camera") {
+					string tokens[12];
+					float parsedValues[12];
+					ssline >> tokens[0] >> tokens[1] >> tokens[2] >> tokens[3] >> tokens[4] >> tokens[5] >> tokens[6] >> tokens[7] >> tokens[8] >> tokens[9] >> tokens[10] >> tokens[11];
+
+					for (size_t i = 0; i < 11; i++)
+					{
+						parsedValues[i] = std::stof(tokens[i]);
+					}
+
+					sensitivity = parsedValues[0];
+					pitch = parsedValues[1];
+					yaw = parsedValues[2];
+					cameraFront = glm::vec3(parsedValues[3], parsedValues[4], parsedValues[5]);
+					cameraPos = glm::vec3(parsedValues[6], parsedValues[7], parsedValues[8]);
+					cameraUp = glm::vec3(parsedValues[9], parsedValues[10], parsedValues[11]);
+				}
+				else {
+					string tokens[10];
+					float parsedValues[8];
+
+					ssline >> tokens[0] >> tokens[1] >> tokens[2] >> tokens[3] >> tokens[4] >> tokens[5] >> tokens[6] >> tokens[7] >> tokens[8] >> tokens[9];
+		
+					for (size_t i = 2; i < 9; i++)
+					{
+						parsedValues[i-2] = std::stof(tokens[i]);
+					}
+					nomeOBJ = tokens[0];
+					controlPointsName = tokens[1];
+					pos = glm::vec3(parsedValues[0], parsedValues[1], parsedValues[2]);
+					escala = parsedValues[3];
+					angulo = parsedValues[4];
+					eixo = glm::vec3(parsedValues[5], parsedValues[6], parsedValues[7]);
+					}
+				}
+		}
+	}
+	else
+	{
+		cout << "Problema ao encontrar o arquivo " << path << endl;
+	}
+	inputFile.close();
 }
