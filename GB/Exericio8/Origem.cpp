@@ -28,11 +28,12 @@ using namespace std;
 #include <vector>
 #define STB_IMAGE_IMPLEMENTATION  
 #include "../../M3 - Adicionando Texturas/stb_image.h"
-
 #include "../curves/Shader.h"
 #include "../curves/Mesh.h"
 #include "../curves/Camera.h"
 #include "../curves/Bezier.h"
+#include "../libconfig-1.7.3/lib/libconfig.h++"
+//using namespace libconfig;
 
 // Protótipo da função de callback do mouse
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -44,21 +45,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // Protótipos das funções
 vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color);
 int loadTexture(string path);
-string getTextureName(string filepath, GLuint shaderID);
+string getTextureName(string filepath);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
 const GLuint WIDTH = 1600, HEIGHT = 1000;
 
 bool rotateX = false, rotateY = false, rotateZ = false;
 
-// Adicionadas as variáveis para possibilitar o deslocamento nos três eixos, bem como a alteração da escala
-
 float q, ka, ks, kd;
 
-bool startScene = false;
+//Config cfg;
 
-vector <glm::vec3> curvePointsBolinha;
-vector <glm::vec3> curvePointsRaquete;
+bool startScene = false;
 
 Camera camera;
 
@@ -88,7 +86,7 @@ int main()
 	//#endif
 
 	// Criação da janela GLFW
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Ola 3D -- Vitor Zillig", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Ola 3D -- Vitor Zillig, Marcelo Fontana e Nicolas Raimundo", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	// Fazendo o registro da função de callback para a janela GLFW
@@ -116,27 +114,16 @@ int main()
 
 	Shader shader("Phong.vs", "Phong.fs");
 
-	// Compilando e buildando o programa de shader
-
-	// Leitura do arquivo "cube.obj" para obter a textura
-	string textureNameBolinha = getTextureName("ping_pong_bolinha.mtl", shader.ID);
-	string textureNameRacket = getTextureName("ping_pong_bat.mtl", shader.ID);
-	string textureNameTable = getTextureName("ping_pong_table.mtl", shader.ID);
-
-	GLuint texIDBolinha = loadTexture(textureNameBolinha);
-	GLuint texIDBat = loadTexture(textureNameRacket);
-	GLuint texIDTable = loadTexture(textureNameTable);
-
 	// Leitura do arquivo "cube.obj" para obter a geometria
 	vector<GLuint> VAO = loadSimpleOBJ("ping_pong_bolinha.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO2 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO3 = loadSimpleOBJ("ping_pong_bat.obj", glm::vec3(0, 1, 0));
 	vector<GLuint> VAO4 = loadSimpleOBJ("ping_pong_table.obj", glm::vec3(0, 1, 0));
 
-	bolinha.initialize(VAO[0], VAO[1], &shader, texIDBolinha, glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
-	raqueteRight.initialize(VAO2[0], VAO2[1], &shader, texIDBat, glm::vec3(1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
-	raqueteLeft.initialize(VAO3[0], VAO3[1], &shader, texIDBat, glm::vec3(-1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
-	mesa.initialize(VAO4[0], VAO4[1], &shader, texIDTable, glm::vec3(-0.2f, -0.85f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
+	bolinha.initialize(VAO[0], VAO[1], &shader, VAO[2], glm::vec3(0.0f, 0.0f, 0.0f), 0.03f);
+	raqueteRight.initialize(VAO2[0], VAO2[1], &shader, VAO2[2], glm::vec3(1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
+	raqueteLeft.initialize(VAO3[0], VAO3[1], &shader, VAO3[2], glm::vec3(-1.5f, 0.3f, 0.0f), 0.03f, 90.0f, glm::vec3(0.0, 0.0, 1.0));
+	mesa.initialize(VAO4[0], VAO4[1], &shader, VAO4[2], glm::vec3(-0.2f, -0.85f, 0.0f), 0.01f, 180.0f, glm::vec3(0.0, 1.0, 1.0));
 
 
 	glUseProgram(shader.ID);
@@ -188,7 +175,6 @@ int main()
 
 		camera.update();
 
-		//mesa.rotate(glm::vec3(0.0, 0.0, 1.0), 90.0f);
 		mesa.rotate(glm::vec3(1.0f, 1.0f, 1.0f),10.5f);
 		mesa.draw();
 		
@@ -235,6 +221,8 @@ int main()
 	// Pede pra OpenGL desalocar os buffers
 	glDeleteVertexArrays(1, &VAO[0]);
 	glDeleteVertexArrays(1, &VAO2[0]);
+	glDeleteVertexArrays(1, &VAO3[0]);
+	glDeleteVertexArrays(1, &VAO4[0]);
 
 	// Finaliza a execução da GLFW, limpando os recursos alocados por ela
 	glfwTerminate();
@@ -335,6 +323,10 @@ vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color)
 	vector <glm::vec3> normals;
 	vector <GLfloat> vbuffer;
 
+	string textureName;
+
+	GLuint texID;
+
 	// Leitura do arquivo
 
 	ifstream inputFile;
@@ -357,6 +349,14 @@ vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color)
 			ssline >> word;
 			//cout << word << " ";
 			//Mapeando as posições
+			if (word == "mtllib") {
+				string tokens[1];
+
+				ssline >> tokens[0];
+				
+				textureName = tokens[0];
+
+			}
 			if (word == "v")
 			{
 				glm::vec3 v;
@@ -463,8 +463,11 @@ vector<GLuint> loadSimpleOBJ(string filepath, glm::vec3 color)
 	// Desvincula o VAO (é uma boa prática desvincular qualquer buffer ou array para evitar bugs medonhos)
 	glBindVertexArray(0);
 	
+	textureName = getTextureName(textureName);
 
-	return {VAO, vbuffer.size()/11};
+	texID = loadTexture(textureName);
+	
+	return {VAO, vbuffer.size()/11, texID};
 }
 
 // Adição da função "loadTexture"
@@ -511,7 +514,7 @@ int loadTexture(string path)
 }
 
 // Função que lê o arquivo passado e retorna o nome da textura
-string getTextureName(string filepath, GLuint shaderID)
+string getTextureName(string filepath)
 {
 
 	ifstream inputFile;
