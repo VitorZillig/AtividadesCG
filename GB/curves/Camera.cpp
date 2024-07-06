@@ -55,18 +55,17 @@ void Camera::rotate(GLFWwindow* window, double xpos, double ypos)
 }
 
 void Camera::update() {
-	//Atualizando a posição e orientação da câmera
+
 	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	shader->setMat4("view", glm::value_ptr(view));
 
 	glm::mat4 projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
 	shader->setMat4("projection", glm::value_ptr(projection));
 
-	//Atualizando o shader com a posição da câmera
 	shader->setVec3("cameraPos", cameraPos.x, cameraPos.y, cameraPos.z);
 }
 
-void Camera::move(GLFWwindow* window, int key, int action)
+void Camera::translate(GLFWwindow* window, int key, int action)
 {
 	
 	float cameraSpeed = 0.05;

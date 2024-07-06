@@ -299,7 +299,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		currentObject->setScale(0.2);
 	}
 
-	camera.move(window, key, action);
+	camera.translate(window, key, action);
 
 	if (key == GLFW_KEY_1) 
 	{
