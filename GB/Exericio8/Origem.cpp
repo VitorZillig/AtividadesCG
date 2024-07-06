@@ -7,6 +7,8 @@
  *
  */
 
+// Componentes do grupo: Marcelo Luiz Fontana, Nicolas Cussioli Raimundo e Vitor Henrique Grego Zillig
+
 #include <iostream>
 #include <string>
 #include <assert.h>
