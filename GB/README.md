@@ -27,6 +27,7 @@ Referências de OBJs:
 
 https://free3d.com/3d-model/pingpong-paddle-v1--337871.html
 https://free3d.com/3d-model/pingpongtable-v2--618009.html
+https://github.com/StefanJohnsen/TriangulateOBJ
 
 Referências bibliográficas:
 
