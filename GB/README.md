@@ -1,5 +1,7 @@
 # AtividadesCG
 
+COMPONENTES DO GRUPO: Marcelo Luiz Fontana, Nicolas Cussioli Raimundo e Vitor Henrique Grego Zillig
+
 Instruções para compilar e executar o projeto:
 
 Executar o arquivo "Hello3D.sln" presente na raiz da pasta GB
